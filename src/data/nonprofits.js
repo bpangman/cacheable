@@ -5,6 +5,7 @@ export const NONPROFITS = [
   {
     id: 'bgca',
     name: "Boys & Girls Clubs of America",
+    shortName: 'BGCA',
     tagline: 'Enabling young people to reach their full potential',
     category: 'Youth Development',
     categoryColor: '#003865',
@@ -40,6 +41,7 @@ export const NONPROFITS = [
   {
     id: 'wwf',
     name: 'World Wildlife Fund',
+    shortName: 'WWF',
     tagline: 'Protecting nature for people and wildlife',
     category: 'Environment',
     categoryColor: '#10b981',
@@ -67,6 +69,7 @@ export const NONPROFITS = [
   {
     id: 'stjude',
     name: "St. Jude Children's Research Hospital",
+    shortName: 'St. Jude',
     tagline: 'Finding cures. Saving children.',
     category: 'Healthcare',
     categoryColor: '#6366f1',
@@ -94,6 +97,7 @@ export const NONPROFITS = [
   {
     id: 'feedamerica',
     name: 'Feeding America',
+    shortName: 'Feeding America',
     tagline: 'End hunger in America',
     category: 'Food Security',
     categoryColor: '#f59e0b',
@@ -121,6 +125,7 @@ export const NONPROFITS = [
   {
     id: 'habitat',
     name: 'Habitat for Humanity',
+    shortName: 'Habitat',
     tagline: 'Building homes, community, and hope',
     category: 'Housing',
     categoryColor: '#8b5cf6',
@@ -148,6 +153,7 @@ export const NONPROFITS = [
   {
     id: 'khanacademy',
     name: 'Khan Academy',
+    shortName: 'Khan Academy',
     tagline: 'Free world-class education for everyone',
     category: 'Education',
     categoryColor: '#0ea5e9',
@@ -175,6 +181,7 @@ export const NONPROFITS = [
   {
     id: 'redcross',
     name: 'American Red Cross',
+    shortName: 'Red Cross',
     tagline: 'Connecting human kindness with human need',
     category: 'Disaster Relief',
     categoryColor: '#dc2626',
@@ -202,6 +209,7 @@ export const NONPROFITS = [
   {
     id: 'doctorswithoutborders',
     name: 'Doctors Without Borders',
+    shortName: 'MSF',
     tagline: 'Medical humanitarian aid worldwide',
     category: 'Healthcare',
     categoryColor: '#6366f1',
@@ -229,6 +237,7 @@ export const NONPROFITS = [
   {
     id: 'aclu',
     name: 'ACLU Foundation',
+    shortName: 'ACLU',
     tagline: 'Defending civil rights & liberties',
     category: 'Civil Rights',
     categoryColor: '#ef4444',

@@ -55,15 +55,6 @@ export default function Dashboard() {
     ? Math.min((totalDonated / nextMilestone.amount) * 100, 100)
     : 100;
 
-  // Safe short name for the payout label — avoid splitting mid-word or on punctuation
-  function getShortName(np) {
-    if (!np) return '';
-    const words = np.name.split(' ');
-    // If first word is a short prefix like "St." use first two words
-    if (words[0].endsWith('.') && words.length > 1) return `${words[0]} ${words[1]}`;
-    return words[0];
-  }
-
   if (!selectedNonprofit) return null;
 
   return (
@@ -196,7 +187,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="font-bold text-gray-900 text-sm">Q1 Payout to {getShortName(selectedNonprofit)}</p>
+              <p className="font-bold text-gray-900 text-sm">Q1 Payout to {selectedNonprofit.shortName}</p>
               <p className="text-gray-400 text-xs mt-0.5">Funds sent on April 1, 2026</p>
             </div>
             <div className="text-right">
