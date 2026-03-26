@@ -22,8 +22,7 @@ const SLIDES = [
     bg: 'from-orange-500 to-amber-400',
     illustration: (
       <div className="relative flex items-center justify-center">
-        <div className="w-40 h-40 rounded-full bg-white/10 flex items-center justify-center pulse-ring absolute" />
-        <CoinLogo size={160} animate showName />
+        <CoinLogo size={260} animate showName />
       </div>
     ),
     title: '',
@@ -999,15 +998,15 @@ export default function Onboarding() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -30 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className={`flex-1 bg-gradient-to-br ${current.bg} flex flex-col items-center justify-center px-8 pt-16 pb-6`}
+          className={`flex-1 bg-gradient-to-br ${current.bg} flex flex-col items-center justify-center px-8 pt-8 pb-6`}
         >
           {/* Illustration */}
-          <div className="h-56 flex items-center justify-center">
+          <div className="h-80 flex items-center justify-center">
             {current.illustration}
           </div>
 
           {/* Text */}
-          <div className="mt-10 text-center">
+          <div className="mt-4 text-center">
             {current.title ? (
               <h1 className="text-white font-bold text-4xl leading-tight whitespace-pre-line" style={{ letterSpacing: '-0.5px' }}>
                 {current.title}

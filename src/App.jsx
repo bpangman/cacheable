@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { AppProvider, useApp } from './store/AppContext';
 import { ThemeProvider, useTheme } from './store/ThemeContext';
 import Onboarding from './pages/Onboarding';
 import AppShell from './components/AppShell';
-import Splash from './pages/Splash';
 import CoinLogo from './components/CoinLogo';
 import { motion } from 'framer-motion';
 
@@ -12,7 +10,7 @@ function AppContent() {
   return page === 'onboarding' ? <Onboarding /> : <AppShell />;
 }
 
-function PhoneFrame({ children, splashDone, onSplashDone }) {
+function PhoneFrame({ children }) {
   const brand = useTheme();
 
   return (
@@ -33,7 +31,7 @@ function PhoneFrame({ children, splashDone, onSplashDone }) {
         <motion.div
           key={brand.appName}
           initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: splashDone ? 1 : 0, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="flex items-center gap-3"
         >
@@ -60,28 +58,22 @@ function PhoneFrame({ children, splashDone, onSplashDone }) {
             9:41
           </div>
           <div className="w-full h-full relative">
-            {/* Splash rendered inside the phone */}
-            {!splashDone && <Splash onDone={onSplashDone} />}
-            {splashDone && children}
+            {children}
           </div>
         </div>
 
-        {splashDone && (
-          <p className="text-slate-500 text-xs text-center max-w-xs">
-            Interactive prototype · Select any cause to rebrand the app
-          </p>
-        )}
+        <p className="text-slate-500 text-xs text-center max-w-xs">
+          Interactive prototype · Select any cause to rebrand the app
+        </p>
       </div>
     </div>
   );
 }
 
 function ThemedApp() {
-  const [splashDone, setSplashDone] = useState(false);
-
   return (
     <ThemeProvider>
-      <PhoneFrame splashDone={splashDone} onSplashDone={() => setSplashDone(true)}>
+      <PhoneFrame>
         <AppContent />
       </PhoneFrame>
     </ThemeProvider>
