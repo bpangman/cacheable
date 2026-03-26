@@ -421,8 +421,8 @@
         <div class="check-item">
           <div class="check-icon pending">!</div>
           <div class="check-text">
-            <div class="title">Backend / server implementation</div>
-            <div class="sub">Currently frontend-only prototype. Need a backend to: create Stripe PaymentIntents/SetupIntents, store subscription state, trigger monthly ACH sweeps, call Endaoment API.</div>
+            <div class="title">Deploy the backend <span class="tag todo">Stubbed — needs server</span></div>
+            <div class="sub">Full backend is written in <code>backend/</code> (Plaid, Stripe, Treasury, Endaoment, all jobs). Needs a deployment target (Railway, Render, or Fly.io) and live credentials to activate. Frontend API calls are still pointed at mock data.</div>
           </div>
         </div>
 
@@ -616,7 +616,65 @@
     </div>
   </div>
 
-  <div class="updated">Dashboard reflects state as of March 25, 2026 · Updated manually as work progresses</div>
+  <!-- ── Backend Architecture ── -->
+  <div>
+    <div class="section-label">Backend Architecture</div>
+    <div class="card">
+      <p style="font-size:0.85rem;color:var(--gray-500);margin-bottom:1.25rem;">Full backend is stubbed in <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:0.8rem;">backend/</code> — real code structure, wired logic, TODOs where live credentials plug in. Not yet deployed; needs a server (Railway, Render, Fly.io, etc.).</p>
+
+      <div class="stack-item">
+        <div class="stack-icon">📅</div>
+        <div>
+          <div class="stack-name">Daily job — 2am every night</div>
+          <div class="stack-role"><code>daily-roundups.js</code> — Fetches new Plaid transactions, calculates round-ups, saves to DB. Filters own charges by amount + date + last4 to prevent infinite loop.</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">📅</div>
+        <div>
+          <div class="stack-name">Monthly job — 1st of month, 6am</div>
+          <div class="stack-role"><code>monthly-charge.js</code> — Sums round-ups per user. Charges via Stripe if ≥$5. Deducts platform fee (5% ACH, 10% card/Apple Pay). Deposits net to Stripe Treasury. Retry once after 3 days on failure; pause + notify on second failure.</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">📅</div>
+        <div>
+          <div class="stack-name">Quarterly job — Jan 1, Apr 1, Jul 1, Oct 1 at 8am</div>
+          <div class="stack-role"><code>quarterly-sweep.js</code> — Gets Treasury balance, initiates ACH OutboundTransfer to Endaoment bank, submits grants via Endaoment API proportionally per nonprofit. Endaoment sends tax receipts to users.</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">🔁</div>
+        <div>
+          <div class="stack-name">Stripe webhook handler</div>
+          <div class="stack-role"><code>webhooks.js</code> — Listens for <code>payment_intent.succeeded</code>, <code>payment_intent.payment_failed</code>, <code>treasury.outbound_transfer.posted</code>. Confirms charges and disbursements asynchronously.</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">🗄</div>
+        <div>
+          <div class="stack-name">Database schema (SQLite)</div>
+          <div class="stack-role"><code>schema.sql</code> — Tables: users, plaid_connections, payment_methods, roundups, monthly_charges, treasury_log, quarterly_disbursements.</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">🔌</div>
+        <div>
+          <div class="stack-name">API routes</div>
+          <div class="stack-role">
+            <code>POST /api/plaid/link-token</code> — creates Plaid Link token for frontend<br>
+            <code>POST /api/plaid/exchange</code> — exchanges public token for access token<br>
+            <code>POST /api/stripe/setup-intent</code> — creates SetupIntent for Stripe Elements<br>
+            <code>POST /api/stripe/financial-session</code> — creates FC session for ACH<br>
+            <code>POST /api/stripe/save-payment-method</code> — attaches pm to customer<br>
+            <code>POST /api/webhooks/stripe</code> — Stripe event handler
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="updated">Dashboard updated March 26, 2026 · Updated each session as work progresses</div>
 
 </main>
 
