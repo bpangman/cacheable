@@ -345,10 +345,24 @@ function SignUpScreen({ onNext }) {
   );
 }
 
-// ─── Card / bank link screen ─────────────────────────────────────────────────
+// ─── Step 1: Connect card for monitoring ─────────────────────────────────────
 
-function CardLinkScreen({ onNext, onSkip }) {
-  const [linked, setLinked] = useState(false);
+const BANKS = [
+  { id: 'chase',   name: 'Chase',        sub: 'Sapphire, Freedom, Ink', color: '#1a56db', emoji: '🏦' },
+  { id: 'capital', name: 'Capital One',  sub: 'Venture, Quicksilver',   color: '#c0392b', emoji: '💳' },
+  { id: 'amex',    name: 'American Express', sub: 'Gold, Platinum, Blue Cash', color: '#007bc1', emoji: '💳' },
+  { id: 'bofa',    name: 'Bank of America', sub: 'Customized Cash, Travel', color: '#e31837', emoji: '🏦' },
+];
+
+function ConnectCardScreen({ onNext }) {
+  const [connecting, setConnecting] = useState(null);
+  const [connected, setConnected] = useState(null);
+
+  function handleSelect(bank) {
+    if (connected) return;
+    setConnecting(bank.id);
+    setTimeout(() => { setConnecting(null); setConnected(bank); }, 1200);
+  }
 
   return (
     <motion.div
@@ -357,15 +371,13 @@ function CardLinkScreen({ onNext, onSkip }) {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="flex flex-col h-full overflow-hidden"
     >
-      {/* Hero */}
       <div
         className="flex flex-col items-center justify-end px-8 pb-8 pt-14 shrink-0"
-        style={{ background: 'linear-gradient(135deg, #0d9488 0%, #0891b2 100%)', minHeight: '40%' }}
+        style={{ background: 'linear-gradient(135deg, #0d9488 0%, #0891b2 100%)', minHeight: '38%' }}
       >
-        {/* Card illustration */}
         <motion.div className="mb-5 flex flex-col items-center gap-3">
           <motion.div
-            initial={{ rotate: -8, y: 12, opacity: 0 }}
+            initial={{ rotate: -4, y: 12, opacity: 0 }}
             animate={{ rotate: -4, y: 0, opacity: 1 }}
             transition={{ delay: 0.15, type: 'spring', stiffness: 180 }}
             className="w-64 h-36 rounded-3xl p-5 shadow-2xl relative overflow-hidden"
@@ -378,10 +390,10 @@ function CardLinkScreen({ onNext, onSkip }) {
                 <div className="w-6 h-6 rounded-full bg-white/25 -ml-2" />
               </div>
             </div>
-            <p className="text-white/80 font-mono text-sm tracking-widest">•••• •••• •••• 4242</p>
+            <p className="text-white/80 font-mono text-sm tracking-widest">•••• •••• •••• ••••</p>
             <div className="flex justify-between mt-2">
-              <p className="text-white/60 text-xs">Alex Johnson</p>
-              <p className="text-white/60 text-xs">12/28</p>
+              <p className="text-white/60 text-xs">Your Card</p>
+              <p className="text-emerald-300 text-xs font-semibold">👁 Watching purchases</p>
             </div>
           </motion.div>
           <motion.div
@@ -391,24 +403,25 @@ function CardLinkScreen({ onNext, onSkip }) {
             className="flex items-center gap-2 px-4 py-2 rounded-2xl"
             style={{ background: 'rgba(255,255,255,0.2)' }}
           >
-            <span className="text-white text-sm">☕ $4.75</span>
+            <span className="text-white text-sm">☕ $3.40</span>
             <span className="text-white/60 text-sm">→</span>
-            <span className="text-white font-bold text-sm">+$0.25 donated 💚</span>
+            <span className="text-white font-bold text-sm">+$0.60 donated 💚</span>
           </motion.div>
         </motion.div>
         <h1 className="text-white font-bold text-4xl leading-tight text-center" style={{ letterSpacing: '-0.5px' }}>
-          Link Your Card
+          Which card should{'\n'}we watch?
         </h1>
         <p className="text-white/80 text-sm mt-2 text-center leading-relaxed">
-          We round up every purchase automatically.{'\n'}No extra steps, no thinking required.
+          We'll track your everyday purchases on this card to calculate your round-ups.
         </p>
       </div>
 
-      {/* Bottom sheet */}
       <div className="flex-1 rounded-t-3xl -mt-4 flex flex-col overflow-hidden" style={{ background: '#f0fdfb' }}>
-        <div className="flex-1 px-4 pt-5 pb-2 space-y-3 overflow-y-auto">
+        <div className="flex-1 px-4 pt-5 pb-2 space-y-2.5 overflow-y-auto">
 
-          {linked ? (
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest px-1 pb-1">Select your card issuer</p>
+
+          {connected ? (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -417,76 +430,209 @@ function CardLinkScreen({ onNext, onSkip }) {
             >
               <CheckCircle size={22} className="text-emerald-600 shrink-0" />
               <div>
-                <p className="font-bold text-emerald-900 text-sm">Chase Sapphire connected</p>
-                <p className="text-emerald-700 text-xs mt-0.5">Round-ups are live on all purchases</p>
+                <p className="font-bold text-emerald-900 text-sm">{connected.name} connected</p>
+                <p className="text-emerald-700 text-xs mt-0.5">We'll watch your purchases and calculate round-ups automatically</p>
               </div>
             </motion.div>
           ) : (
-            <>
+            BANKS.map(bank => (
               <motion.button
+                key={bank.id}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setLinked(true)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl text-left shadow-sm"
-                style={{ background: '#fff', border: '1.5px solid #99f6e4' }}
+                onClick={() => handleSelect(bank)}
+                className="w-full flex items-center gap-3 p-4 rounded-2xl text-left"
+                style={{ background: '#fff', border: '1.5px solid #99f6e4', opacity: connecting && connecting !== bank.id ? 0.4 : 1 }}
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #0d9488, #0891b2)' }}>
-                  <Building2 size={22} className="text-white" />
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-xl bg-gray-50">
+                  {bank.emoji}
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900 text-sm">Connect Bank Account</p>
-                  <p className="text-gray-400 text-xs">Via Plaid — secure, read-only access</p>
+                  <p className="font-bold text-gray-900 text-sm">{bank.name}</p>
+                  <p className="text-gray-400 text-xs">{bank.sub}</p>
                 </div>
-                <ArrowRight size={16} className="text-gray-300 shrink-0" />
+                {connecting === bank.id
+                  ? <span className="text-xs text-teal-600 font-semibold">Connecting…</span>
+                  : <ArrowRight size={16} className="text-gray-300 shrink-0" />
+                }
               </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setLinked(true)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl text-left shadow-sm"
-                style={{ background: '#fff', border: '1.5px solid #e5e7eb' }}
-              >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-gray-100">
-                  <CreditCard size={22} className="text-gray-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900 text-sm">Add a Debit / Credit Card</p>
-                  <p className="text-gray-400 text-xs">Manually enter card details</p>
-                </div>
-                <ArrowRight size={16} className="text-gray-300 shrink-0" />
-              </motion.button>
-            </>
+            ))
           )}
 
-          {/* Security note */}
-          <div className="flex items-center gap-2 px-1">
+          {!connected && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl text-left border-2 border-dashed border-gray-200 bg-white"
+              onClick={() => handleSelect({ id: 'other', name: 'My Bank', sub: '' })}
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-gray-100">
+                <Building2 size={20} className="text-gray-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-700 text-sm">Search all banks & cards</p>
+                <p className="text-gray-400 text-xs">12,000+ institutions supported via Plaid</p>
+              </div>
+              <ArrowRight size={16} className="text-gray-300 shrink-0" />
+            </motion.button>
+          )}
+
+          <div className="flex items-center gap-2 px-1 pt-1">
             <Lock size={12} className="text-gray-400 shrink-0" />
-            <p className="text-gray-400 text-xs">256-bit encryption · We never store your full card number</p>
+            <p className="text-gray-400 text-xs">Read-only access via Plaid · Your credentials are never stored by PocketChange</p>
           </div>
         </div>
 
-        {/* CTA + fine print */}
         <div className="px-4 pb-10 pt-3 border-t border-teal-100" style={{ background: '#f0fdfb' }}>
           <motion.button
-            whileTap={linked ? { scale: 0.97 } : {}}
-            onClick={() => linked && onNext()}
+            whileTap={connected ? { scale: 0.97 } : {}}
+            onClick={() => connected && onNext()}
             className="w-full py-4 rounded-2xl text-white font-bold text-base"
             style={{
-              background: linked ? 'linear-gradient(135deg, #0d9488, #0891b2)' : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
-              opacity: linked ? 1 : 0.6,
-              cursor: linked ? 'pointer' : 'default',
+              background: connected ? 'linear-gradient(135deg, #0d9488, #0891b2)' : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+              cursor: connected ? 'pointer' : 'default',
             }}
           >
-            {linked ? 'Continue to Pick Your Cause →' : 'Connect a Card to Continue'}
+            {connected ? 'Continue →' : 'Select a card to continue'}
           </motion.button>
-          <button
-            onClick={onSkip}
-            className="w-full text-center text-gray-400 text-sm font-medium py-3"
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Step 2: Choose payment method ───────────────────────────────────────────
+
+const PAYMENT_OPTIONS = [
+  {
+    id: 'ach',
+    icon: '🏦',
+    label: 'Bank Account',
+    sub: 'Direct bank transfer via Stripe',
+    badge: 'Best for most people',
+    badgeColor: '#059669',
+  },
+  {
+    id: 'apple_pay',
+    icon: '🍎',
+    label: 'Apple Pay',
+    sub: 'Set up once, fully automatic after that',
+    badge: null,
+  },
+  {
+    id: 'card',
+    icon: '💳',
+    label: 'Credit or Debit Card',
+    sub: 'Visa, Mastercard, Amex, or Discover',
+    badge: null,
+  },
+];
+
+function PaymentMethodScreen({ onNext }) {
+  const [selected, setSelected] = useState(null);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 30 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="flex flex-col h-full overflow-hidden"
+    >
+      <div
+        className="flex flex-col items-center justify-end px-8 pb-8 pt-14 shrink-0"
+        style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)', minHeight: '38%' }}
+      >
+        <motion.div className="mb-5 flex flex-col items-center gap-3">
+          <div className="flex gap-3">
+            {['🏦', '🍎', '💳'].map((icon, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.1 + 0.2, type: 'spring', stiffness: 280 }}
+                className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-3xl"
+              >
+                {icon}
+              </motion.div>
+            ))}
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-center gap-2 bg-white/20 rounded-2xl px-4 py-2"
           >
-            I'll add a card later
-          </button>
-          <p className="text-center text-gray-400 text-xs leading-relaxed px-2">
-            PocketChange retains a <span className="font-semibold">3% processing fee</span> from each donation to cover platform and payment costs. The remaining 97% goes directly to your chosen cause.
+            <span className="text-white text-sm font-semibold">Charged once a month · $5 minimum</span>
+          </motion.div>
+        </motion.div>
+        <h1 className="text-white font-bold text-4xl leading-tight text-center" style={{ letterSpacing: '-0.5px' }}>
+          How should we{'\n'}collect your round-ups?
+        </h1>
+        <p className="text-white/80 text-sm mt-2 text-center leading-relaxed">
+          Once a month, we'll add up your round-ups and charge your chosen payment method.
+        </p>
+      </div>
+
+      <div className="flex-1 bg-gray-50 rounded-t-3xl -mt-4 flex flex-col overflow-hidden">
+        <div className="flex-1 px-4 pt-5 pb-2 space-y-2.5 overflow-y-auto">
+
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest px-1 pb-1">Choose your payment method</p>
+
+          {PAYMENT_OPTIONS.map(opt => (
+            <motion.button
+              key={opt.id}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setSelected(opt.id)}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-all"
+              style={selected === opt.id
+                ? { background: '#ede9fe', border: '2px solid #7c3aed' }
+                : { background: '#fff', border: '1.5px solid #e5e7eb' }
+              }
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-2xl bg-gray-50">
+                {opt.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-bold text-gray-900 text-sm">{opt.label}</p>
+                  {opt.badge && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
+                      style={{ background: opt.badgeColor }}>
+                      {opt.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-400 text-xs mt-0.5">{opt.sub}</p>
+              </div>
+              <div
+                className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+                style={selected === opt.id
+                  ? { borderColor: '#7c3aed', background: '#7c3aed' }
+                  : { borderColor: '#d1d5db', background: 'transparent' }
+                }
+              >
+                {selected === opt.id && <div className="w-2 h-2 rounded-full bg-white" />}
+              </div>
+            </motion.button>
+          ))}
+
+          <p className="text-gray-400 text-xs text-center px-2 pt-1">
+            You can change this anytime in Settings. Donations are processed securely via Stripe.
+          </p>
+        </div>
+
+        <div className="px-4 pb-10 pt-3 bg-gray-50 border-t border-gray-100">
+          <motion.button
+            whileTap={selected ? { scale: 0.97 } : {}}
+            onClick={() => selected && onNext()}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base"
+            style={{
+              background: selected ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+              cursor: selected ? 'pointer' : 'default',
+            }}
+          >
+            {selected ? 'Continue — Pick Your Cause →' : 'Choose a payment method'}
+          </motion.button>
+          <p className="text-center text-gray-400 text-xs leading-relaxed px-2 mt-3">
+            PocketChange retains a <span className="font-semibold">3% processing fee</span>. The remaining 97% goes directly to your chosen cause via Endaoment, a registered 501(c)(3).
           </p>
         </div>
       </div>
@@ -698,7 +844,7 @@ function CauseSelectionScreen({ onComplete }) {
 
 export default function Onboarding() {
   const [slide, setSlide] = useState(0);
-  const [step, setStep] = useState('slides'); // 'slides' | 'signup' | 'card' | 'cause'
+  const [step, setStep] = useState('slides'); // 'slides' | 'signup' | 'connect-card' | 'payment-method' | 'cause'
 
   const current = SLIDES[slide];
   const isLast = slide === SLIDES.length - 1;
@@ -712,8 +858,9 @@ export default function Onboarding() {
   }
 
   if (step === 'cause') return <CauseSelectionScreen />;
-  if (step === 'card') return <CardLinkScreen onNext={() => setStep('cause')} onSkip={() => setStep('cause')} />;
-  if (step === 'signup') return <SignUpScreen onNext={() => setStep('card')} />;
+  if (step === 'payment-method') return <PaymentMethodScreen onNext={() => setStep('cause')} />;
+  if (step === 'connect-card') return <ConnectCardScreen onNext={() => setStep('payment-method')} />;
+  if (step === 'signup') return <SignUpScreen onNext={() => setStep('connect-card')} />;
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">

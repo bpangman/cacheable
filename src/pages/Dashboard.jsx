@@ -288,7 +288,7 @@ export default function Dashboard() {
                   <p className="text-white/60 text-xs">Your chosen cause</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-col gap-1.5 shrink-0">
                 <button
                   onClick={() => setShowBoost(true)}
                   className="bg-white/20 hover:bg-white/30 rounded-xl px-3 py-1.5 text-white text-xs font-semibold flex items-center gap-1"
