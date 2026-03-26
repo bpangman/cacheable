@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
-import { ArrowUpRight, Zap, Heart, TrendingUp, X, Share2 } from 'lucide-react';
+import { ArrowUpRight, Zap, Heart, TrendingUp, X, Share2, Plus } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import { useTheme } from '../store/ThemeContext';
 import { TRANSACTIONS, MONTHLY_DATA } from '../data/transactions';
 import OrgLogo from '../components/OrgLogo';
 import CustomTooltip from '../components/CustomTooltip';
+import Sheet from '../components/Sheet';
 
-const MILESTONES = [
-  { amount: 10, label: 'First $10', emoji: '🌱', achieved: true },
-  { amount: 25, label: '$25 given', emoji: '⭐', achieved: true },
-  { amount: 50, label: '$50 club', emoji: '🏆', achieved: true },
-  { amount: 100, label: 'Century', emoji: '💎', achieved: false },
-  { amount: 250, label: '$250 hero', emoji: '🦸', achieved: false },
+const MILESTONE_DEFS = [
+  { amount: 10,  label: 'First $10',  emoji: '🌱' },
+  { amount: 25,  label: '$25 given',  emoji: '⭐' },
+  { amount: 50,  label: '$50 club',   emoji: '🏆' },
+  { amount: 100, label: 'Century',    emoji: '💎' },
+  { amount: 250, label: '$250 hero',  emoji: '🦸' },
 ];
 
 function daysUntilQuarterEnd() {
@@ -24,6 +25,155 @@ function daysUntilQuarterEnd() {
   const quarterEndMonth = Math.ceil((m + 1) / 3) * 3; // 3, 6, 9, 12
   const qEnd = new Date(y, quarterEndMonth, 1); // first day of next quarter = last day of this one
   return Math.max(1, Math.ceil((qEnd - now) / (1000 * 60 * 60 * 24)));
+}
+
+const BOOST_PRESETS = [1, 5, 10, 25];
+const LARGE_DONATION_THRESHOLD = 1000;
+
+function GiveExtraSheet({ show, onClose, onConfirm, nonprofit, brand }) {
+  const [selected, setSelected] = useState(5);
+  const [custom, setCustom] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const inputRef = useRef(null);
+  const amount = custom ? parseFloat(custom) : selected;
+  const valid = amount > 0 && !isNaN(amount);
+  const isLarge = valid && amount >= LARGE_DONATION_THRESHOLD;
+
+  // Reset state every time the sheet opens
+  useEffect(() => {
+    if (show) {
+      setSelected(5);
+      setCustom('');
+      setShowConfirm(false);
+    }
+  }, [show]);
+
+  function handlePrimaryTap() {
+    if (!valid) return;
+    if (isLarge) { setShowConfirm(true); return; }
+    onConfirm(amount);
+    onClose();
+  }
+
+  function handleConfirmedLarge() {
+    onConfirm(amount);
+    setShowConfirm(false);
+    onClose();
+  }
+
+  const displayAmount = valid
+    ? (Number.isInteger(amount) ? amount : amount.toFixed(2))
+    : '—';
+
+  return (
+    <Sheet show={show} onClose={onClose} title="Give Extra Now">
+      <div className="px-6 py-5 pb-8">
+        <p className="text-gray-500 text-sm mb-5">
+          Make a one-time donation to{' '}
+          <span className="font-semibold text-gray-900">{nonprofit?.shortName}</span>{' '}
+          on top of your round-ups.
+        </p>
+
+        {/* Preset amounts */}
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {BOOST_PRESETS.map(p => (
+            <motion.button
+              key={p}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => { setSelected(p); setCustom(''); }}
+              className="py-3 rounded-2xl font-bold text-sm transition-all"
+              style={selected === p && !custom
+                ? { background: brand.gradient, color: '#fff' }
+                : { background: '#f3f4f6', color: '#374151' }}
+            >
+              ${p}
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Custom amount */}
+        <div
+          className="flex items-center gap-2 rounded-2xl px-4 py-3 mb-5 border-2 transition-colors"
+          style={{ background: '#f9fafb', borderColor: custom ? brand.primary : 'transparent' }}
+        >
+          <span className="text-gray-400 font-semibold">$</span>
+          <input
+            ref={inputRef}
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="0.01"
+            placeholder="Custom amount"
+            value={custom}
+            onChange={e => { setCustom(e.target.value); setSelected(null); }}
+            className="flex-1 bg-transparent text-gray-900 text-sm outline-none placeholder:text-gray-400"
+          />
+        </div>
+
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={handlePrimaryTap}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base"
+          style={{ background: brand.gradient, opacity: valid ? 1 : 0.4 }}
+        >
+          Give ${displayAmount} Now
+        </motion.button>
+
+        {/* Large-amount confirmation overlay */}
+        <AnimatePresence>
+          {showConfirm && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute inset-x-6 bottom-8 bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-xl"
+              style={{ background: '#fffbeb' }}
+            >
+              <p className="font-bold text-amber-900 text-base mb-1">Just to confirm…</p>
+              <p className="text-amber-700 text-sm mb-4">
+                You're about to donate <span className="font-bold">${displayAmount}</span> to{' '}
+                {nonprofit?.shortName}. Was that intentional?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  className="flex-1 py-3 rounded-2xl bg-white border border-amber-200 text-amber-700 font-semibold text-sm"
+                >
+                  Go back
+                </button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleConfirmedLarge}
+                  className="flex-1 py-3 rounded-2xl text-white font-bold text-sm"
+                  style={{ background: brand.gradient }}
+                >
+                  Yes, give ${displayAmount}
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </Sheet>
+  );
+}
+
+function BoostToast({ amount, nonprofit, onClose }) {
+  return (
+    <motion.div
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -80, opacity: 0 }}
+      className="absolute top-20 left-4 right-4 z-30 bg-white rounded-3xl p-4 shadow-2xl flex items-center gap-3"
+    >
+      <div className="text-3xl">💚</div>
+      <div className="flex-1">
+        <p className="font-bold text-gray-900 text-sm">Extra ${typeof amount === 'number' && !Number.isInteger(amount) ? amount.toFixed(2) : amount} sent!</p>
+        <p className="text-gray-500 text-xs">Added to your {nonprofit?.shortName} donation</p>
+      </div>
+      <button onClick={onClose}><X size={16} className="text-gray-300" /></button>
+    </motion.div>
+  );
 }
 
 function MilestoneToast({ milestone, onClose }) {
@@ -45,26 +195,54 @@ function MilestoneToast({ milestone, onClose }) {
 }
 
 export default function Dashboard() {
-  const { selectedNonprofit, totalDonated, pendingRoundUps, setTab } = useApp();
+  const { selectedNonprofit, totalDonated, boostDonation, pendingRoundUps, setTab } = useApp();
   const brand = useTheme();
   const [showMilestone, setShowMilestone] = useState(true);
+  const [showBoost, setShowBoost] = useState(false);
+  const [boostToast, setBoostToast] = useState(null);
+  const toastTimerRef = useRef(null);
   const daysLeft = daysUntilQuarterEnd();
-  const nextMilestone = MILESTONES.find(m => !m.achieved);
-  const latestAchieved = [...MILESTONES].reverse().find(m => m.achieved);
+
+  const milestones = MILESTONE_DEFS.map(m => ({ ...m, achieved: totalDonated >= m.amount }));
+  const nextMilestone = milestones.find(m => !m.achieved);
+  const latestAchieved = [...milestones].reverse().find(m => m.achieved);
   const progressToNext = nextMilestone
     ? Math.min((totalDonated / nextMilestone.amount) * 100, 100)
     : 100;
 
   if (!selectedNonprofit) return null;
 
+  function handleBoostConfirm(amount) {
+    boostDonation(amount);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setBoostToast(amount);
+    toastTimerRef.current = setTimeout(() => setBoostToast(null), 3500);
+  }
+
   return (
     <div className="flex flex-col h-full bg-gray-50 relative">
+      {/* Boost toast */}
+      <AnimatePresence>
+        {boostToast !== null && (
+          <BoostToast amount={boostToast} nonprofit={selectedNonprofit} onClose={() => setBoostToast(null)} />
+        )}
+      </AnimatePresence>
+
       {/* Milestone toast */}
       <AnimatePresence>
-        {showMilestone && latestAchieved && (
+        {showMilestone && latestAchieved && boostToast === null && (
           <MilestoneToast milestone={latestAchieved} onClose={() => setShowMilestone(false)} />
         )}
       </AnimatePresence>
+
+      {/* Give Extra sheet */}
+      <GiveExtraSheet
+        show={showBoost}
+        onClose={() => setShowBoost(false)}
+        onConfirm={handleBoostConfirm}
+        nonprofit={selectedNonprofit}
+        brand={brand}
+      />
 
       {/* Header */}
       <motion.div
@@ -110,12 +288,20 @@ export default function Dashboard() {
                   <p className="text-white/60 text-xs">Your chosen cause</p>
                 </div>
               </div>
-              <button
-                onClick={() => setTab('nonprofits')}
-                className="bg-white/20 hover:bg-white/30 rounded-xl px-3 py-1.5 text-white text-xs font-semibold flex items-center gap-1"
-              >
-                Change <ArrowUpRight size={12} />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setShowBoost(true)}
+                  className="bg-white/20 hover:bg-white/30 rounded-xl px-3 py-1.5 text-white text-xs font-semibold flex items-center gap-1"
+                >
+                  <Plus size={12} /> Give Extra
+                </button>
+                <button
+                  onClick={() => setTab('nonprofits')}
+                  className="bg-white/20 hover:bg-white/30 rounded-xl px-3 py-1.5 text-white text-xs font-semibold flex items-center gap-1"
+                >
+                  Change <ArrowUpRight size={12} />
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -225,7 +411,7 @@ export default function Dashboard() {
             )}
           </div>
           <div className="flex gap-3 overflow-x-auto scrollable pb-1">
-            {MILESTONES.map((m) => (
+            {milestones.map((m) => (
               <div key={m.amount} className="flex flex-col items-center gap-1.5 shrink-0">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-all ${
                   m.achieved ? 'shadow-md' : 'opacity-30 grayscale'

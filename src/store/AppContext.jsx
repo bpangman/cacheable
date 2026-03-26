@@ -26,7 +26,7 @@ export function AppProvider({ children }) {
   const [linkedCards, setLinkedCardsState] = useState(() => load('pc_cards', [
     { id: 1, last4: '4242', brand: 'Visa', name: 'Chase Sapphire' },
   ]));
-  const [totalDonated] = useState(60.58);
+  const [totalDonated, setTotalDonated] = useState(() => load('pc_total_donated', 60.58));
 
   // pendingRoundUps is always derived from the multiplier — changing it in Settings now has effect
   const pendingRoundUps = parseFloat((BASE_PENDING * roundUpMultiplier).toFixed(2));
@@ -53,6 +53,14 @@ export function AppProvider({ children }) {
     setRoundUpMultiplierState(v);
   }
 
+  function boostDonation(amount) {
+    setTotalDonated(prev => {
+      const next = parseFloat((prev + amount).toFixed(2));
+      save('pc_total_donated', next);
+      return next;
+    });
+  }
+
   function setLinkedCards(updater) {
     setLinkedCardsState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
@@ -69,6 +77,7 @@ export function AppProvider({ children }) {
       roundUpMultiplier, setRoundUpMultiplier,
       linkedCards, setLinkedCards,
       totalDonated,
+      boostDonation,
       pendingRoundUps,
     }}>
       {children}

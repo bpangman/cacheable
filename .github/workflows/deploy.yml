@@ -30,10 +30,39 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Structure Pages output (v2 + retired root)
+        run: |
+          mkdir -p dist-pages/v2
+          cp -r dist/* dist-pages/v2/
+          cat > dist-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>PocketChange</title>
+            <style>
+              body { margin: 0; font-family: -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f9fafb; }
+              .card { text-align: center; padding: 2rem; max-width: 360px; }
+              .icon { font-size: 3rem; margin-bottom: 1rem; }
+              h1 { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem; }
+              p { color: #6b7280; font-size: 0.875rem; margin: 0 0 1.5rem; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="icon">🪙</div>
+              <h1>This demo link has expired.</h1>
+              <p>Please contact us for an updated link.</p>
+            </div>
+          </body>
+          </html>
+          EOF
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: dist-pages
 
   deploy:
     needs: build
